@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"speed/handle"
-	"speed/server"
+
+	"github.com/dipakw/byrate/handle"
+	"github.com/dipakw/byrate/server"
 )
 
 func main() {
