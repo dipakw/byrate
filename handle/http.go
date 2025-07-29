@@ -10,7 +10,6 @@ func (r *Req) Parse(b []byte) *Req {
 	n := len(b)
 
 	reqLineEnd := bytes.Index(b, []byte("\r\n"))
-
 	if reqLineEnd == -1 {
 		reqLineEnd = n // no newline, treat entire chunk as request line
 	}
@@ -22,8 +21,10 @@ func (r *Req) Parse(b []byte) *Req {
 		return nil
 	}
 
+	path := strings.SplitN(parts[1], "?", 2)[0]
+
 	return &Req{
-		Path: strings.Trim(parts[1], "/"),
+		Path: strings.Trim(path, "/"),
 		Ver:  parts[2],
 	}
 }
