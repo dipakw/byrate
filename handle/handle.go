@@ -37,9 +37,7 @@ func Handle(conn net.Conn) {
 	}
 
 	if req.Path == "download" {
-		chunkSize := 4 * 1024                // 4 KB
-		totalSize := 10 * 1024 * 1024 * 1024 // 10 GB
-		buffer := make([]byte, chunkSize)
+		totalSize := 50 * 1024 * 1024 // 50 MB
 
 		res = &Res{
 			Code: 200,
@@ -47,7 +45,7 @@ func Handle(conn net.Conn) {
 			Headers: map[string]string{
 				"Content-Disposition": "attachment; filename=data.bin",
 				"Content-Type":        "application/octet-stream",
-				"Content-Length":      fmt.Sprintf("%d", totalSize),
+				"Content-Length":      fmt.Sprintf("%d", totalSize+5),
 				"Cache-Control":       "no-cache, no-store, must-revalidate",
 				"Pragma":              "no-cache",
 				"Expires":             "0",
@@ -58,12 +56,12 @@ func Handle(conn net.Conn) {
 			return
 		}
 
-		for i := 0; i < totalSize; i += chunkSize {
-			buffer = buffer[:chunkSize]
+		if _, err := conn.Write([]byte("start")); err != nil {
+			return
+		}
 
-			if _, err := conn.Write(buffer); err != nil {
-				return
-			}
+		if sendDummyBytes(conn, totalSize) != nil {
+			return
 		}
 
 		return
@@ -98,4 +96,19 @@ func Handle(conn net.Conn) {
 	}
 
 	conn.Write(res.Bytes())
+}
+
+func sendDummyBytes(conn net.Conn, dataSize int) error {
+	chunkSize := 16 * 1024 // 16 KB
+	buffer := make([]byte, chunkSize)
+
+	for i := 0; i < dataSize; i += chunkSize {
+		buffer = buffer[:chunkSize]
+
+		if _, err := conn.Write(buffer); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
