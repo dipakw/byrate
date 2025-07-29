@@ -2,6 +2,7 @@ class SpeedTest {
     // Track downloaded bytes
     downloaded = 0;
     downloadStartedAt = 0;
+    downloadStarted = false;
 
     // Callbacks to notify about changes
     callbacks = [];
@@ -9,16 +10,32 @@ class SpeedTest {
     // Reader and controller
     reader = null;
     controller = null;
-    running = false;
 
     constructor({ download }) {
         this.downloadUrl = download;
     }
 
     async download() {
-        this.running = true;
         this.downloaded = 0;
+        this.downloadStartedAt = Date.now();
 
+        await this.downloadReal((done, e) => {
+            let status = done ? 'completed' : 'progress';
+
+            if (e) {
+                status = 'errored';
+            }
+
+            this.notify({
+                status,
+                type: 'download',
+                error: e,
+                bytes: this.downloaded,
+            });
+        });
+    }
+
+    async downloadReal(cb) {
         try {
             const response = await fetch(this.downloadUrl);
 
@@ -26,58 +43,33 @@ class SpeedTest {
                 throw new Error("ReadableStream not supported.");
             }
 
-            this.downloadStartedAt = Date.now();
             this.reader = response.body.getReader();
 
             const readChunk = async () => {
                 const { done, value } = await this.reader.read();
 
-                if (done || !this.running) {
-                    this.notify({
-                        type: 'download',
-                        status: 'completed',
-                        bytes: this.downloaded,
-                    });
-
-                    return;
-                }
-
                 // Count bytes
                 this.downloaded += value.byteLength;
 
-                // console.log("Received chunk:", value);
+                if (!this.downloadStarted && String.fromCharCode.apply(null, value.slice(0, 5)) === "start") {
+                    this.downloadStartedAt = Date.now();
+                    this.downloadStarted = true;
+                }
 
-                this.notify({
-                    type: 'download',
-                    status: 'progress',
-                    bytes: this.downloaded,
-                });
+                cb(done, null);
 
                 await readChunk();
             };
 
             await readChunk();
         } catch (e) {
-            if (this.running) {
-                this.notify({
-                    type: 'download',
-                    status: 'errored',
-                    error: e,
-                    bytes: this.downloaded,
-                });
-            }
+            cb(false, e);
         }
     }
 
     stop() {
-        if (!this.running) {
-            return;
-        }
-
-        this.running = false;
-
         if (this.reader) {
-            this.reader.cancel().catch(() => {});
+            this.reader.cancel().catch(() => { });
             this.reader = null;
         }
 
@@ -267,7 +259,7 @@ class Timer {
     }
 
     speedTest.callback((data) => {
-        if (data.status === 'completed') {
+        if (data.status === 'completed' || data.status === 'errored') {
             stopTest();
         }
 
