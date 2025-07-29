@@ -6,75 +6,86 @@ class SpeedTest {
     // Callbacks to notify about changes
     callbacks = [];
 
-    // Xhrs
-    downloadXhr = null;
+    // Reader and controller
+    reader = null;
+    controller = null;
+    running = false;
 
     constructor({ download }) {
         this.downloadUrl = download;
     }
 
-    download() {
-        this.downloadXhr = new XMLHttpRequest();
-        this.downloadXhr.open("GET", this.downloadUrl, true);
-        this.downloadXhr.responseType = "arraybuffer";
+    async download() {
+        this.running = true;
+        this.downloaded = 0;
 
-        this.downloadXhr.onload = () => {
-            this.downloaded = this.downloadXhr.response?.byteLength || this.downloaded;
+        try {
+            const response = await fetch(this.downloadUrl);
 
-            this.notify({
-                type: 'download',
-                status: 'completed',
-                bytes: this.downloaded,
-            });
-        };
-
-        this.downloadXhr.onprogress = (event) => {
-            this.downloaded = event.loaded;
-
-            this.notify({
-                type: 'download',
-                status: 'progress',
-                bytes: this.downloaded,
-            });
-        };
-
-        this.downloadXhr.onerror = (e) => {
-            this.notify({
-                type: 'download',
-                status: 'errored',
-                error: e,
-                bytes: this.downloaded,
-            });
-        };
-
-        this.downloadXhr.ontimeout = () => {
-            this.notify({
-                type: 'download',
-                status: 'timedout',
-                bytes: this.downloaded,
-            });
-        };
-
-        this.downloadXhr.onabort = () => {
-            this.notify({
-                type: 'download',
-                status: 'stopped',
-                bytes: this.downloaded,
-            });
-        };
-
-        this.downloadXhr.onreadystatechange = () => {
-            if (this.downloadXhr.readyState === 2) {
-                this.downloadStartedAt = Date.now();
+            if (!response.body) {
+                throw new Error("ReadableStream not supported.");
             }
-        };
 
-        this.downloadXhr.send();
+            this.downloadStartedAt = Date.now();
+            this.reader = response.body.getReader();
+
+            const readChunk = async () => {
+                const { done, value } = await this.reader.read();
+
+                if (done || !this.running) {
+                    this.notify({
+                        type: 'download',
+                        status: 'completed',
+                        bytes: this.downloaded,
+                    });
+
+                    return;
+                }
+
+                // Count bytes
+                this.downloaded += value.byteLength;
+
+                // console.log("Received chunk:", value);
+
+                this.notify({
+                    type: 'download',
+                    status: 'progress',
+                    bytes: this.downloaded,
+                });
+
+                await readChunk();
+            };
+
+            await readChunk();
+        } catch (e) {
+            if (this.running) {
+                this.notify({
+                    type: 'download',
+                    status: 'errored',
+                    error: e,
+                    bytes: this.downloaded,
+                });
+            }
+        }
     }
 
     stop() {
-        this.downloadXhr.abort();
-        this.downloadXhr = null;
+        if (!this.running) {
+            return;
+        }
+
+        this.running = false;
+
+        if (this.reader) {
+            this.reader.cancel().catch(() => {});
+            this.reader = null;
+        }
+
+        this.notify({
+            type: 'download',
+            status: 'stopped',
+            bytes: this.downloaded,
+        });
     }
 
     notify(obj) {
@@ -256,6 +267,10 @@ class Timer {
     }
 
     speedTest.callback((data) => {
+        if (data.status === 'completed') {
+            stopTest();
+        }
+
         speedOut.textContent = data.speed;
     });
 
