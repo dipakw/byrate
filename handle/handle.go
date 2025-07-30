@@ -1,23 +1,22 @@
 package handle
 
 import (
+	"bufio"
 	"embed"
 	"fmt"
 	"net"
 	"strings"
-	"time"
 )
 
 //go:embed ui/index.html ui/app.js ui/style.css
 var ui embed.FS
 
 func Handle(conn net.Conn) {
-	defer func() {
-		time.Sleep(500 * time.Millisecond)
-		conn.Close()
-	}()
+	defer conn.Close()
 
-	buf := make([]byte, 64)
+	writer := bufio.NewWriter(conn)
+
+	buf := make([]byte, 1024)
 
 	n, err := conn.Read(buf)
 
@@ -57,11 +56,15 @@ func Handle(conn net.Conn) {
 			},
 		}
 
-		if _, err := conn.Write(res.Bytes()); err != nil {
+		if _, err := writer.Write(res.Bytes()); err != nil {
 			return
 		}
 
-		if sendDummyBytes(conn, totalSize) != nil {
+		if err := writer.Flush(); err != nil {
+			return
+		}
+
+		if sendDummyBytes(writer, totalSize) != nil {
 			return
 		}
 
@@ -96,10 +99,11 @@ func Handle(conn net.Conn) {
 		}
 	}
 
-	conn.Write(res.Bytes())
+	writer.Write(res.Bytes())
+	writer.Flush()
 }
 
-func sendDummyBytes(conn net.Conn, dataSize int) error {
+func sendDummyBytes(writer *bufio.Writer, dataSize int) error {
 	chunkSize := 16 * 1024 // 16 KB
 	buffer := make([]byte, chunkSize)
 	copy(buffer, []byte("start"))
@@ -114,12 +118,12 @@ func sendDummyBytes(conn net.Conn, dataSize int) error {
 
 		buffer = buffer[:size]
 
-		if _, err := conn.Write(buffer); err != nil {
+		if _, err := writer.Write(buffer); err != nil {
 			return err
 		}
 
 		remain -= size
 	}
 
-	return nil
+	return writer.Flush()
 }
