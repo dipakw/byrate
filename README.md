@@ -14,7 +14,7 @@ A fully self-contained, portable, self-hosted internet download speed test tool 
 curl -sL https://bit.ly/byrate-dl | sh
 ```
 
-## Get started
+## Get Started
 
 Download the appropriate binary file for your OS from [releases](https://github.com/dipakw/byrate/releases) or the commands above.
 
