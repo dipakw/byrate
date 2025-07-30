@@ -43,3 +43,16 @@ Options:
 Notes:
   - All options can use either --long or -short forms.
 ```
+
+## Disclaimer
+
+This tool provides **approximate internet speed test results** for general informational purposes only. Actual performance may vary due to factors like network traffic, server load, or configuration.
+
+**Important Notes:**
+- Results are rough averages, not guaranteed measurements
+- Not suitable for contracts, SLAs, or dispute resolution
+- Use at your own risk – no liability for decisions based on results
+- For reliable insights, test multiple times using different tools
+- This is a self-hosted tool; local network setup affects accuracy
+
+Provided “as is” with no warranties of any kind.
