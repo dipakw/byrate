@@ -1,3 +1,7 @@
+![Latest Release](https://img.shields.io/github/v/release/dipakw/byrate)
+![Build](https://github.com/dipakw/byrate/actions/workflows/release.yml/badge.svg)
+![License](https://img.shields.io/github/license/dipakw/byrate)
+
 # byrate
 
 A fully self-contained, portable, self-hosted internet download speed test tool written in Go. Easily measure download performance without any external dependencies or third-party services—just run the binary and test.
