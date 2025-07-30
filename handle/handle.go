@@ -2,6 +2,7 @@ package handle
 
 import (
 	"bufio"
+	"bytes"
 	"embed"
 	"fmt"
 	"net"
@@ -16,7 +17,7 @@ func Handle(conn net.Conn) {
 
 	writer := bufio.NewWriter(conn)
 
-	buf := make([]byte, 1024)
+	buf := make([]byte, 2048)
 
 	n, err := conn.Read(buf)
 
@@ -87,6 +88,16 @@ func Handle(conn net.Conn) {
 				mimeType = mime
 				break
 			}
+		}
+
+		if filename == "index.html" {
+			setTheme := ""
+
+			if req.Theme != "" {
+				setTheme = " " + req.Theme
+			}
+
+			file = bytes.Replace(file, []byte(" curentTheme"), []byte(setTheme), -1)
 		}
 
 		res = &Res{

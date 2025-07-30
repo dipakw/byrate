@@ -13,8 +13,9 @@ var mimes = map[string]string{
 }
 
 type Req struct {
-	Path string
-	Ver  string
+	Path  string
+	Ver   string
+	Theme string
 }
 
 type Res struct {

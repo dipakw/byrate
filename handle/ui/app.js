@@ -268,3 +268,28 @@ class Timer {
 
     button.addEventListener('click', onButtonClick);
 })();
+
+// Theme switching.
+(() => {
+    const isLight = document.cookie.includes('theme=light');
+
+    const bthThemeDark = document.querySelector('.theme-dark');
+    const bthThemeLight = document.querySelector('.theme-light');
+    const wrappers = document.querySelectorAll('.app, .footer');
+
+    if (isLight) {
+        wrappers.forEach((wrapper) => {
+            wrapper.classList.add('light');
+        });
+    }
+
+    bthThemeDark.addEventListener('click', () => {
+        wrappers.forEach(wrapper => wrapper.classList.remove('light'));
+        document.cookie = 'theme=dark; path=/';
+    });
+    
+    bthThemeLight.addEventListener('click', () => {
+        wrappers.forEach(wrapper => wrapper.classList.add('light'));
+        document.cookie = 'theme=light; path=/';
+    });
+})();

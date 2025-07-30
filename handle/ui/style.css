@@ -17,6 +17,8 @@ html, body, * {
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: #3d3f43;
+    background: radial-gradient(circle, #222314 0%, #181b2f 100%);
 }
 
 .outer {
@@ -114,11 +116,6 @@ html, body, * {
     /* box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.5); */
 }
 
-.app {
-    background-color: #3d3f43;
-    background: radial-gradient(circle, #222314 0%, #181b2f 100%);
-}
-
 .meter {
     background-color: #000;
     color: #666;
@@ -189,4 +186,106 @@ html, body, * {
     border-left: none;
     border-bottom: none;
     background-color: currentColor;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 10px 20px;
+    color: #a4a4a4;
+    border-top: 1px solid #373e49;
+    font-size: 14px;
+}
+
+.footer a:hover,
+.footer a:active,
+.footer a:visited,
+.footer a {
+    color: #a4a4a4;
+    text-decoration: none;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50;
+}
+
+.footer .links {
+    flex: 1;
+}
+
+.footer > div {
+    display: flex;
+    align-items: center;
+}
+
+.footer a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.footer .theme-dark {
+    display: none;
+}
+
+.footer.light .theme-dark {
+    display: flex;
+}
+
+.footer.light .theme-light {
+    display: none;
+}
+
+/* Light theme */
+.app.light {
+    background-color: #f0f0f0;
+    background: #f0f0f0;
+    background: radial-gradient(circle, #e1e1e1 0%, #d5daff 100%);
+}
+
+.app.light .outer {
+    background-color: #e4e3d8;
+}
+
+.app.light .top {
+    border-bottom: 2px solid #876a4a;
+}
+
+.app.light .meter {
+    background-color: #c3c0af;
+}
+
+.app.light .meter .handw::after {
+    background-color: #dbdbdb;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.app.light .speed {
+    border-top: 1px solid #284a7f;
+    border-bottom: 1px solid #284a7f;
+}
+
+.app.light .btn {
+    color: #ffffffcc;
+}
+
+.app.light .btn.active {
+    background-color: #a64c4c;
+}
+
+.footer.light {
+    color: #444;
+    border-top: 1px solid #b6b6b6;
+}
+
+.footer.light a:hover,
+.footer.light a:active,
+.footer.light a:visited,
+.footer.light a {
+    color: #444;
 }
