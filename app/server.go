@@ -1,11 +1,11 @@
-package server
+package app
 
 import (
 	"context"
 	"net"
 )
 
-func New(conf *Config) *Server {
+func NewServer(conf *Config) *Server {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &Server{
@@ -45,6 +45,14 @@ func (s *Server) Start(handle func(net.Conn)) error {
 	}()
 
 	return nil
+}
+
+func (s *Server) Net() string {
+	return s.conf.Net
+}
+
+func (s *Server) Addr() string {
+	return s.conf.Addr
 }
 
 func (s *Server) Wait() {
