@@ -20,7 +20,7 @@ Download the appropriate binary file for your OS from [releases](https://github.
 
 | Description                               | Example                                |
 |-------------------------------------------|----------------------------------------|
-| Default start (starts on `[::1]:14000`)   | `byrate`                               |
+| Default start (starts on `0.0.0.0:14000`) | `byrate`                               |
 | Custom host / port                        | `byrate s -h=localhost -p=15000`       |
 | On a Unix socket                          | `byrate s -u -h=/tmp/byrate.sock`      |
 
@@ -36,7 +36,7 @@ Commands:
   help, h      Show this help message
 
 Options:
-  --host, -h    Server host (default: ::1)
+  --host, -h    Server host (default: 0.0.0.0)
   --port, -p    Server port (default: 14000)
   --unix, -u    Use unix socket instead of TCP
 
