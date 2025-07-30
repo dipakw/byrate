@@ -12,7 +12,10 @@ import (
 var ui embed.FS
 
 func Handle(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		time.Sleep(500 * time.Millisecond)
+		conn.Close()
+	}()
 
 	buf := make([]byte, 64)
 
@@ -38,8 +41,6 @@ func Handle(conn net.Conn) {
 	}
 
 	if req.Path == "download" {
-		defer time.Sleep(500 * time.Millisecond)
-
 		totalSize := 50 * 1024 * 1024 // 50 MB
 
 		res = &Res{
