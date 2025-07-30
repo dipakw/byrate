@@ -9,6 +9,7 @@ var mimes = map[string]string{
 	".html": "text/html",
 	".css":  "text/css",
 	".js":   "application/javascript",
+	".svg":  "image/svg+xml",
 }
 
 type Req struct {

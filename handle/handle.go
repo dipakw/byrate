@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-//go:embed ui/index.html ui/app.js ui/style.css
+//go:embed ui/index.html ui/app.js ui/style.css ui/favicon.svg
 var ui embed.FS
 
 func Handle(conn net.Conn) {
