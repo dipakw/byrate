@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 //go:embed ui/index.html ui/app.js ui/style.css
@@ -37,6 +38,8 @@ func Handle(conn net.Conn) {
 	}
 
 	if req.Path == "download" {
+		defer time.Sleep(500 * time.Millisecond)
+
 		totalSize := 50 * 1024 * 1024 // 50 MB
 
 		res = &Res{
@@ -45,18 +48,15 @@ func Handle(conn net.Conn) {
 			Headers: map[string]string{
 				"Content-Disposition": "attachment; filename=data.bin",
 				"Content-Type":        "application/octet-stream",
-				"Content-Length":      fmt.Sprintf("%d", totalSize+5),
+				"Content-Length":      fmt.Sprintf("%d", totalSize),
 				"Cache-Control":       "no-cache, no-store, must-revalidate",
 				"Pragma":              "no-cache",
 				"Expires":             "0",
+				"Connection":          "close",
 			},
 		}
 
 		if _, err := conn.Write(res.Bytes()); err != nil {
-			return
-		}
-
-		if _, err := conn.Write([]byte("start")); err != nil {
 			return
 		}
 
@@ -101,13 +101,23 @@ func Handle(conn net.Conn) {
 func sendDummyBytes(conn net.Conn, dataSize int) error {
 	chunkSize := 16 * 1024 // 16 KB
 	buffer := make([]byte, chunkSize)
+	copy(buffer, []byte("start"))
+	remain := dataSize
 
-	for i := 0; i < dataSize; i += chunkSize {
-		buffer = buffer[:chunkSize]
+	for remain > 0 {
+		size := chunkSize
+
+		if remain < chunkSize {
+			size = remain
+		}
+
+		buffer = buffer[:size]
 
 		if _, err := conn.Write(buffer); err != nil {
 			return err
 		}
+
+		remain -= size
 	}
 
 	return nil

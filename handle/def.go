@@ -20,4 +20,5 @@ type Res struct {
 	Code    int
 	Data    []byte
 	Headers map[string]string
+	NoSize  bool
 }

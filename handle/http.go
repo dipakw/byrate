@@ -44,7 +44,10 @@ func (r *Res) Bytes() []byte {
 
 	buf := bytes.NewBufferString(strings.Join(headers, "\r\n"))
 	buf.WriteString("\r\n\r\n")
-	buf.Write(r.Data)
+
+	if len(r.Data) > 0 {
+		buf.Write(r.Data)
+	}
 
 	return buf.Bytes()
 }
