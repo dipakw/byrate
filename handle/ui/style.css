@@ -457,3 +457,10 @@ body,
         opacity: 0;
     }
 }
+
+/* Responsive */
+@media (max-width: 360px) {
+    .h-small {
+        display: none;
+    }
+}
