@@ -17,12 +17,15 @@ var downloadOptions = map[string]Opts{
 		Default: "50",
 
 		Opts: map[string]bool{
+			"5":   true,
+			"10":  true,
+			"20":  true,
 			"50":  true,
 			"100": true,
 			"200": true,
 			"300": true,
 			"400": true,
-			"600": true,
+			"500": true,
 		},
 	},
 
