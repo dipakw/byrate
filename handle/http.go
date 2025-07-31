@@ -7,43 +7,65 @@ import (
 )
 
 func (r *Req) Parse(b []byte) *Req {
-	n := len(b)
+	// Find index separating headers and body
+	headerEnd := bytes.Index(b, []byte("\r\n\r\n"))
 
-	reqLineEnd := bytes.Index(b, []byte("\r\n"))
-	if reqLineEnd == -1 {
-		reqLineEnd = n // no newline, treat entire chunk as request line
+	if headerEnd == -1 {
+		return nil // Malformed request, missing header-body separator
 	}
 
-	reqLine := string(b[:reqLineEnd])
+	r.Index = headerEnd
+
+	// Split headers from body
+	headerSection := b[:headerEnd]
+	lines := bytes.Split(headerSection, []byte("\r\n"))
+
+	if len(lines) < 1 {
+		return nil // Malformed request
+	}
+
+	// Parse request line: METHOD PATH VERSION
+	reqLine := string(lines[0])
 	parts := strings.SplitN(reqLine, " ", 3)
-
 	if len(parts) != 3 {
-		return nil
+		return nil // Malformed request line
 	}
 
+	method := strings.ToUpper(parts[0])
+	path := strings.Trim(parts[1], "/")
+	version := parts[2]
+
+	// Parse query parameters
 	params := map[string]string{}
-	theme := ""
-
-	if strings.Contains(string(b), "theme=light") {
-		theme = "light"
+	pathParts := strings.SplitN(path, "?", 2)
+	if len(pathParts) > 1 {
+		path = pathParts[0]
+		query := pathParts[1]
+		for _, pair := range strings.Split(query, "&") {
+			if kv := strings.SplitN(pair, "=", 2); len(kv) == 2 {
+				params[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
+			}
+		}
 	}
 
-	pathParts := strings.SplitN(parts[1], "?", 2)
-
-	if len(pathParts) > 1 {
-		queryParts := strings.Split(pathParts[1], "&")
-
-		for _, queryPart := range queryParts {
-			parts := strings.Split(queryPart, "=")
-			params[strings.Trim(parts[0], " ")] = strings.Trim(parts[1], " ")
+	// Parse headers
+	headers := map[string]string{}
+	for _, line := range lines[1:] {
+		if kv := bytes.SplitN(line, []byte(":"), 2); len(kv) == 2 {
+			key := strings.TrimSpace(string(kv[0]))
+			val := strings.TrimSpace(string(kv[1]))
+			headers[strings.ToLower(key)] = val
 		}
 	}
 
 	return &Req{
-		Path:   strings.Trim(pathParts[0], "/"),
-		Ver:    parts[2],
-		Theme:  theme,
-		Params: params,
+		Method:  method,
+		Path:    path,
+		Ver:     version,
+		Params:  params,
+		Headers: headers,
+		Index:   headerEnd + 4,
+		Body:    b[headerEnd+4:],
 	}
 }
 
@@ -52,8 +74,10 @@ func (r *Res) Bytes() []byte {
 		fmt.Sprintf("HTTP/1.1 %d %s", r.Code, statuses[r.Code]),
 	}
 
-	if _, ok := r.Headers["Content-Length"]; !ok {
-		r.Headers["Content-Length"] = fmt.Sprintf("%d", len(r.Data))
+	if r.Headers != nil {
+		if _, ok := r.Headers["Content-Length"]; !ok {
+			r.Headers["Content-Length"] = fmt.Sprintf("%d", len(r.Data))
+		}
 	}
 
 	for k, v := range r.Headers {
