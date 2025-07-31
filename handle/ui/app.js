@@ -8,6 +8,7 @@ class SpeedTest {
     uploaded = 0;
     uploadStartedAt = 0;
     uploadStarted = false;
+    uploadXmlHttp = null;
 
     // Callbacks to notify about changes
     callbacks = [];
@@ -22,6 +23,12 @@ class SpeedTest {
     }
 
     async download({ params }) {
+        this.notify({
+            type: 'download',
+            status: 'progress',
+            bytes: 0,
+        });
+
         this.downloaded = 0;
         this.downloadStartedAt = Date.now();
 
@@ -84,10 +91,34 @@ class SpeedTest {
     }
 
     async upload({ params }) {
+        this.notify({
+            type: 'upload',
+            status: 'progress',
+            bytes: 0,
+        });
+
+        const totalSize = 1 * 1024 * 1024 * 1024; // 1GiB
+        const chunkSize = 50 * 1024 * 1024; // 50MB
+        const buffer = new Uint8Array(totalSize).fill(0x00);
+
+        let remaining = totalSize;
+
+        const file = {
+            read: () => {
+                if (remaining <= 0) {
+                    return null;
+                }
+
+                const bufSize = Math.min(remaining, Math.min(remaining, chunkSize));
+                remaining -= bufSize;
+                return new Blob([buffer.slice(0, bufSize)], { type: 'application/octet-stream' });
+            },
+        };
+
         this.uploaded = 0;
         this.uploadStartedAt = Date.now();
 
-        await this.uploadReal(params, (done, e) => {
+        await this.uploadReal(file, params, (done, e) => {
             let status = done ? 'completed' : 'progress';
 
             if (e) {
@@ -103,7 +134,7 @@ class SpeedTest {
         });
     }
 
-    async uploadReal(params, cb) {
+    async uploadReal(file, params, cb) {
         const queryParams = new URLSearchParams();
 
         if (params && typeof params === 'object') {
@@ -112,44 +143,83 @@ class SpeedTest {
             }
         }
 
-        queryParams.set('cache', Math.random());
-
-        try {
-            const blobSize = 10 * 1024 * 1024; // 10MB
-            const chunks = 10;
-            const data = new Uint8Array(blobSize).fill(0xff);
-
-            for (let i = 0; i < chunks; i++) {
-                const res = await fetch(`${this.uploadUrl}?${queryParams.toString()}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    body: data
-                });
-
-                if (!res.ok) {
-                    throw new Error(`Upload failed with status ${res.status}`);
-                }
-
-                this.uploaded += data.byteLength;
-
-                if (!this.uploadStarted) {
-                    this.uploadStartedAt = Date.now();
-                    this.uploadStarted = true;
-                }
-
-                cb(i === chunks - 1, null);
+        const xhrCb = (size, done, e) => {
+            if (size > 0) {
+                this.uploaded += size;
             }
-        } catch (e) {
-            cb(false, e);
+
+            cb(done, e);
         }
+
+        while (true) {
+            const chunk = file.read();
+
+            if (chunk === null) {
+                break;
+            }
+
+            queryParams.set('cache', Math.random());
+            queryParams.set('size', chunk.size);
+
+            try {
+                await this.uploadUsingXhr(`${this.uploadUrl}?${queryParams.toString()}`, chunk, xhrCb);
+            } catch (e) {
+                break;
+            }
+        }
+    }
+
+    uploadUsingXhr(url, blob, cb) {
+        return new Promise((resolve, reject) => {
+            this.uploadXmlHttp = new XMLHttpRequest();
+
+            const xhr = this.uploadXmlHttp;
+
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+            xhr.upload.addEventListener('progress', (event) => {
+                cb(event.loaded, false, null);
+            });
+
+            xhr.onload = (event) => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    cb(0, true, null);
+                } else {
+                    cb(0, false, xhr.status);
+                }
+
+                resolve();
+            };
+            
+            xhr.onerror = () => {
+                cb(0, false, xhr.statusText);
+                reject(xhr.statusText);
+            };
+            
+            xhr.onabort = () => {
+                cb(0, false, 'Aborted');
+                reject('Aborted');
+            };
+            
+            xhr.ontimeout = () => {
+                cb(0, false, 'Timeout');
+                reject('Timeout');
+            };
+
+            xhr.send(blob);
+        });
     }
 
     stop() {
         if (this.reader) {
             this.reader.cancel().catch(() => { });
             this.reader = null;
+        }
+
+        if (this.uploadXmlHttp) {
+            this.uploadXmlHttp.abort();
+            this.uploadXmlHttp = null;
         }
 
         this.notify({
@@ -161,14 +231,15 @@ class SpeedTest {
 
     notify(obj) {
         const end = Date.now();
-        const duration = (end - this.downloadStartedAt) / 1000;
+        const startedAt = obj.type === 'download' ? this.downloadStartedAt : this.uploadStartedAt;
+        const duration = (end - startedAt) / 1000;
 
         this.callbacks.forEach(cb => cb({
             ...obj,
             duration,
-            startedAt: this.downloadStartedAt,
+            startedAt,
             endedAt: end,
-            speed: this.format(this.downloaded, this.downloadStartedAt, end),
+            speed: this.format(obj.bytes, startedAt, end),
         }));
     }
 
@@ -179,7 +250,7 @@ class SpeedTest {
     format(bytes, start, end) {
         const duration = (end - start) / 1000;
 
-        if (duration <= 0) {
+        if (duration <= 0 || bytes <= 0) {
             return "0 bps";
         }
 
