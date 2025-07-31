@@ -19,7 +19,7 @@ func Handle(conn net.Conn) {
 
 	writer := bufio.NewWriter(conn)
 
-	buf := make([]byte, 2048)
+	buf := make([]byte, 4096)
 
 	n, err := conn.Read(buf)
 
@@ -45,7 +45,7 @@ func Handle(conn net.Conn) {
 	if req.Path == "download" {
 		opts := map[string]int{}
 
-		for key, opt := range downloadOptions {
+		for key, opt := range uploadDownloadOptions {
 			if val, ok := req.Params[key]; ok {
 				if opt.Opts[val] {
 					opts[key], _ = strconv.Atoi(val)
@@ -53,7 +53,7 @@ func Handle(conn net.Conn) {
 			}
 		}
 
-		for key, opt := range downloadOptions {
+		for key, opt := range uploadDownloadOptions {
 			if _, ok := opts[key]; !ok {
 				opts[key], _ = strconv.Atoi(opt.Default)
 			}
@@ -92,6 +92,65 @@ func Handle(conn net.Conn) {
 		return
 	}
 
+	if req.Path == "upload" && req.Method == "POST" {
+		opts := map[string]int{}
+
+		for key, opt := range uploadDownloadOptions {
+			if val, ok := req.Params[key]; ok {
+				if opt.Opts[val] {
+					opts[key], _ = strconv.Atoi(val)
+				}
+			}
+		}
+
+		for key, opt := range uploadDownloadOptions {
+			if _, ok := opts[key]; !ok {
+				opts[key], _ = strconv.Atoi(opt.Default)
+			}
+		}
+
+		res := &Res{
+			Code: 200,
+			Data: []byte("done"),
+		}
+
+		if _, ok := req.Headers["content-length"]; !ok {
+			return
+		}
+
+		contentLength, err := strconv.Atoi(req.Headers["content-length"])
+
+		if err != nil {
+			return
+		}
+
+		// TODO: check if the content-length equals to opts["size"] * 1024 * 1024
+
+		remainSizeToRead := contentLength - len(req.Body)
+
+		if remainSizeToRead > 0 {
+			conn.SetReadDeadline(time.Now().Add(time.Duration(opts["duration"]+2) * time.Second))
+
+			buf := make([]byte, opts["chunk"]*1024)
+			read := 0
+
+			for read != remainSizeToRead {
+				n, err := conn.Read(buf)
+
+				if err != nil {
+					return
+				}
+
+				read += n
+			}
+		}
+
+		writer.Write(res.Bytes())
+		writer.Flush()
+
+		return
+	}
+
 	filename := req.Path
 
 	if filename == "" {
@@ -113,8 +172,8 @@ func Handle(conn net.Conn) {
 		if filename == "index.html" {
 			setTheme := ""
 
-			if req.Theme != "" {
-				setTheme = " " + req.Theme
+			if req.Headers["cookie"] != "" && strings.Contains(req.Headers["cookie"], "theme=light") {
+				setTheme = " light"
 			}
 
 			file = bytes.Replace(file, []byte(" curentTheme"), []byte(setTheme), -1)

@@ -12,7 +12,7 @@ var mimes = map[string]string{
 	".svg":  "image/svg+xml",
 }
 
-var downloadOptions = map[string]Opts{
+var uploadDownloadOptions = map[string]Opts{
 	"size": {
 		Default: "50",
 
@@ -62,10 +62,14 @@ type Opts struct {
 }
 
 type Req struct {
-	Path   string
-	Ver    string
-	Theme  string
-	Params map[string]string
+	Method  string
+	Path    string
+	Ver     string
+	Params  map[string]string
+	Headers map[string]string
+	Length  int
+	Index   int
+	Body    []byte
 }
 
 type Res struct {
