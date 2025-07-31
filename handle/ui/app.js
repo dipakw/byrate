@@ -15,11 +15,11 @@ class SpeedTest {
         this.downloadUrl = download;
     }
 
-    async download() {
+    async download({ params }) {
         this.downloaded = 0;
         this.downloadStartedAt = Date.now();
 
-        await this.downloadReal((done, e) => {
+        await this.downloadReal(params, (done, e) => {
             let status = done ? 'completed' : 'progress';
 
             if (e) {
@@ -35,9 +35,19 @@ class SpeedTest {
         });
     }
 
-    async downloadReal(cb) {
+    async downloadReal(params, cb) {
+        const queryParams = new URLSearchParams();
+
+        if (params && typeof params === 'object') {
+            for (const key in params) {
+                queryParams.set(key, params[key]);
+            }
+        }
+
+        queryParams.set('cache', Math.random());
+
         try {
-            const response = await fetch(this.downloadUrl);
+            const response = await fetch(`${this.downloadUrl}?${queryParams.toString()}`);
 
             if (!response.body) {
                 throw new Error("ReadableStream not supported.");
@@ -182,6 +192,75 @@ class Timer {
 }
 
 (() => {
+    const settingsValues = {
+        size: {
+            default: 50,
+            values: [50, 100, 200, 300, 400, 600],
+        },
+
+        chunk: {
+            default: 4,
+            values: [2, 4, 8, 16, 32, 64],
+        },
+
+        duration: {
+            default: 15,
+            values: [5, 10, 15, 20, 25, 30],
+        },
+    };
+
+    // Settings setter.
+    const setSettingsOption = (key, value, uiOnly = false) => {
+        const pre = document.querySelector(`.modal .content .input[data-name="${key}"] .active`);
+        const now = document.querySelector(`.modal .content .input[data-name="${key}"] [data-value="${value}"]`);
+
+        if (!pre || !now) {
+            return;
+        }
+
+        pre.classList.remove('active');
+        now.classList.add('active');
+
+        if (!uiOnly) {
+            localStorage.setItem(`${key}`, value);
+        }
+    }
+
+    // Settings getter.
+    const getSettingsOption = (key) => {
+        if (!settingsValues[key]) {
+            return;
+        }
+
+        const value = Number(localStorage.getItem(key));
+
+        if (value && !isNaN(value) && settingsValues[key].values.indexOf(value) !== -1) {
+            return value;
+        }
+
+        return settingsValues[key].default;
+    }
+
+    // Get settings from UI.
+    const getSettingsFromUI = () => {
+        const size = document.querySelector('.modal .content .input[data-name="size"] .active').dataset.value;
+        const chunk = document.querySelector('.modal .content .input[data-name="chunk"] .active').dataset.value;
+        const duration = document.querySelector('.modal .content .input[data-name="duration"] .active').dataset.value;
+
+        return {
+            size: parseInt(size),
+            chunk: parseInt(chunk),
+            duration: parseInt(duration),
+        };
+    }
+
+    // Update settings from UI.
+    const updateSettingsUI = () => {
+        setSettingsOption('size', getSettingsOption('size'), true);
+        setSettingsOption('chunk', getSettingsOption('chunk'), true);
+        setSettingsOption('duration', getSettingsOption('duration'), true);
+    }
+
     // Get necessary elements.
     const hand = document.querySelector('.hand');
     const speedOut = document.querySelector('.speed');
@@ -230,9 +309,15 @@ class Timer {
         button.classList.add('active');
         button.textContent = 'Stop';
         timer.reset().start();
-        speedTest.download();
 
-        timeout = setTimeout(stopTest, 15000);
+        speedTest.download({
+            params: {
+                size: getSettingsOption('size'),
+                chunk: getSettingsOption('chunk'),
+            },
+        });
+
+        timeout = setTimeout(stopTest, getSettingsOption('duration') * 1000);
     }
 
     const stopTest = () => {
@@ -267,10 +352,8 @@ class Timer {
     });
 
     button.addEventListener('click', onButtonClick);
-})();
 
-// Theme switching.
-(() => {
+    // Theme switching.
     const isLight = document.cookie.includes('theme=light');
 
     const bthThemeDark = document.querySelector('.theme-dark');
@@ -287,9 +370,65 @@ class Timer {
         wrappers.forEach(wrapper => wrapper.classList.remove('light'));
         document.cookie = 'theme=dark; path=/';
     });
-    
+
     bthThemeLight.addEventListener('click', () => {
         wrappers.forEach(wrapper => wrapper.classList.add('light'));
         document.cookie = 'theme=light; path=/';
     });
+
+    // Settings.
+    const modal = document.querySelector('.modal');
+    const inputs = document.querySelectorAll('.modal .content .input');
+
+    const openModal = () => {
+        updateSettingsUI();
+        modal.style.display = 'flex';
+        modal.classList.add('fade-in');
+    }
+
+    const closeModal = () => {
+        modal.classList.remove('fade-in');
+        modal.classList.add('fade-out');
+
+        setTimeout(() => {
+            modal.classList.remove('fade-out');
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    inputs.forEach((parent) => {
+        parent.addEventListener('click', (e) => {
+            const { target } = e;
+
+            if (target.classList.contains('active')) {
+                return;
+            }
+
+            parent.querySelector('.active').classList.remove('active');
+            target.classList.add('active');
+        });
+    });
+
+    const saveSettings = () => {
+        const settings = getSettingsFromUI();
+
+        for (const key in settings) {
+            setSettingsOption(key, settings[key]);
+        }
+
+        closeModal();
+    }
+
+    const setDefaults = () => {
+        for (const key in settingsValues) {
+            setSettingsOption(key, settingsValues[key].default, true);
+        }
+    }
+
+    document.querySelector('.open-settings').addEventListener('click', openModal);
+    document.querySelector('.close-settings').addEventListener('click', closeModal);
+    document.querySelector('.save-settings').addEventListener('click', saveSettings);
+    document.querySelector('.set-defaults').addEventListener('click', setDefaults);
+
+    updateSettingsUI();
 })();

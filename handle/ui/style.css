@@ -7,7 +7,9 @@ body {
     line-height: 1.3;
 }
 
-html, body, * {
+html,
+body,
+* {
     box-sizing: border-box;
 }
 
@@ -83,11 +85,11 @@ html, body, * {
     0% {
         transform: translateX(0) rotate(0deg);
     }
-    
+
     33% {
         transform: translateX(0) rotate(-30deg);
     }
-    
+
     66% {
         transform: translateX(0) rotate(30deg);
     }
@@ -217,15 +219,16 @@ html, body, * {
     flex: 1;
 }
 
-.footer > div {
+.footer>div {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
 .footer a {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
 }
 
@@ -239,6 +242,132 @@ html, body, * {
 
 .footer.light .theme-light {
     display: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    padding: 20px;
+    padding-bottom: 20px;
+}
+
+.modal .content .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal .content .input {
+    margin-top: 10px;
+}
+
+.modal .content {
+    width: 280px;
+    height: auto;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px 24px 24px 24px;
+    margin-top: auto;
+    margin-bottom: auto;
+    max-width: 100%;
+}
+
+.modal .content .label {
+    font-size: 13px;
+    margin-bottom: 4px;
+    font-weight: bold;
+    opacity: 0.6;
+    position: relative;
+    padding-left: 16px;
+}
+
+.modal .content .label::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background-color: currentColor;
+    border-radius: 100%;
+}
+
+.modal .content .select {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.modal .content .select div {
+    padding: 8px 4px;
+    text-align: center;
+    border: 1px solid #ccc;
+    margin-right: -1px;
+    margin-bottom: -1px;
+    cursor: pointer;
+}
+
+.modal .content .select div:hover {
+    background-color: #f0f0f0;
+}
+
+.modal .content .select div:first-child {
+    border-radius: 6px 0 0 0;
+}
+
+.modal .content .select div:nth-child(3) {
+    border-radius: 0 6px 0 0;
+}
+
+.modal .content .select div:nth-child(4) {
+    border-radius: 0 0 0 6px;
+}
+
+.modal .content .select div:last-child {
+    border-radius: 0 0 6px 0;
+}
+
+.modal .content .select div.active {
+    background-color: #284a7f;
+    color: #fff;
+}
+
+.modal .content .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+}
+
+.modal .content .foot .set-defaults {
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    color: #284a7fbb;
+}
+
+.modal .content .mbtn {
+    border: none;
+    outline: none;
+    background-color: #000;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
 }
 
 /* Light theme */
@@ -288,4 +417,43 @@ html, body, * {
 .footer.light a:visited,
 .footer.light a {
     color: #444;
+}
+
+/* Helpers */
+.click:hover {
+    opacity: 0.75;
+    cursor: pointer;
+}
+
+.click:active {
+    opacity: 1;
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in forwards;
+}
+
+.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
