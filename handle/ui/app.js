@@ -261,6 +261,14 @@ class Timer {
         setSettingsOption('duration', getSettingsOption('duration'), true);
     }
 
+    // Update app size.
+    const updateAppSize = () => {
+        const app = document.querySelector('.app');
+
+        app.style.height = `${window.innerHeight}px`;
+        app.style.width = `${window.innerWidth}px`;
+    }
+
     // Get necessary elements.
     const hand = document.querySelector('.hand');
     const speedOut = document.querySelector('.speed');
@@ -432,4 +440,9 @@ class Timer {
     document.querySelector('.set-defaults').addEventListener('click', setDefaults);
 
     updateSettingsUI();
+    updateAppSize();
+
+    window.addEventListener('resize', updateAppSize);
+    window.addEventListener('orientationchange', updateAppSize);
+    window.addEventListener('load', updateAppSize);
 })();
