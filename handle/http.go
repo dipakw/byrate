@@ -21,18 +21,29 @@ func (r *Req) Parse(b []byte) *Req {
 		return nil
 	}
 
+	params := map[string]string{}
 	theme := ""
 
 	if strings.Contains(string(b), "theme=light") {
 		theme = "light"
 	}
 
-	path := strings.SplitN(parts[1], "?", 2)[0]
+	pathParts := strings.SplitN(parts[1], "?", 2)
+
+	if len(pathParts) > 1 {
+		queryParts := strings.Split(pathParts[1], "&")
+
+		for _, queryPart := range queryParts {
+			parts := strings.Split(queryPart, "=")
+			params[strings.Trim(parts[0], " ")] = strings.Trim(parts[1], " ")
+		}
+	}
 
 	return &Req{
-		Path:  strings.Trim(path, "/"),
-		Ver:   parts[2],
-		Theme: theme,
+		Path:   strings.Trim(pathParts[0], "/"),
+		Ver:    parts[2],
+		Theme:  theme,
+		Params: params,
 	}
 }
 

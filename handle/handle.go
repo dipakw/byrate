@@ -6,7 +6,9 @@ import (
 	"embed"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
+	"time"
 )
 
 //go:embed ui/index.html ui/app.js ui/style.css ui/favicon.svg
@@ -41,7 +43,19 @@ func Handle(conn net.Conn) {
 	}
 
 	if req.Path == "download" {
-		totalSize := 50 * 1024 * 1024 // 50 MB
+		opts := map[string]int{}
+
+		for key, opt := range downloadOptions {
+			if val, ok := req.Params[key]; ok {
+				if opt.Opts[val] {
+					opts[key], _ = strconv.Atoi(val)
+				}
+			} else {
+				opts[key], _ = strconv.Atoi(opt.Default)
+			}
+		}
+
+		totalSize := opts["size"] * 1024 * 1024
 
 		res = &Res{
 			Code: 200,
@@ -57,6 +71,8 @@ func Handle(conn net.Conn) {
 			},
 		}
 
+		conn.SetWriteDeadline(time.Now().Add(time.Duration(opts["duration"]+2) * time.Second))
+
 		if _, err := writer.Write(res.Bytes()); err != nil {
 			return
 		}
@@ -65,7 +81,7 @@ func Handle(conn net.Conn) {
 			return
 		}
 
-		if sendDummyBytes(writer, totalSize) != nil {
+		if sendDummyBytes(writer, totalSize, opts["chunk"]) != nil {
 			return
 		}
 
@@ -114,8 +130,8 @@ func Handle(conn net.Conn) {
 	writer.Flush()
 }
 
-func sendDummyBytes(writer *bufio.Writer, dataSize int) error {
-	chunkSize := 16 * 1024 // 16 KB
+func sendDummyBytes(writer *bufio.Writer, dataSize int, chunkKb int) error {
+	chunkSize := chunkKb * 1024
 	buffer := make([]byte, chunkSize)
 	copy(buffer, []byte("start"))
 	remain := dataSize

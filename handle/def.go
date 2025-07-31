@@ -12,10 +12,57 @@ var mimes = map[string]string{
 	".svg":  "image/svg+xml",
 }
 
+var downloadOptions = map[string]Opts{
+	"size": {
+		Default: "50",
+
+		Opts: map[string]bool{
+			"50":  true,
+			"100": true,
+			"200": true,
+			"300": true,
+			"400": true,
+			"600": true,
+		},
+	},
+
+	"chunk": {
+		Default: "4",
+
+		Opts: map[string]bool{
+			"2":  true,
+			"4":  true,
+			"8":  true,
+			"16": true,
+			"32": true,
+			"64": true,
+		},
+	},
+
+	"duration": {
+		Default: "15",
+
+		Opts: map[string]bool{
+			"5":  true,
+			"10": true,
+			"15": true,
+			"20": true,
+			"25": true,
+			"30": true,
+		},
+	},
+}
+
+type Opts struct {
+	Default string
+	Opts    map[string]bool
+}
+
 type Req struct {
-	Path  string
-	Ver   string
-	Theme string
+	Path   string
+	Ver    string
+	Theme  string
+	Params map[string]string
 }
 
 type Res struct {
