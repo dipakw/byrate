@@ -27,7 +27,7 @@ var downloadOptions = map[string]Opts{
 	},
 
 	"chunk": {
-		Default: "4",
+		Default: "16",
 
 		Opts: map[string]bool{
 			"2":  true,
@@ -40,7 +40,7 @@ var downloadOptions = map[string]Opts{
 	},
 
 	"duration": {
-		Default: "15",
+		Default: "10",
 
 		Opts: map[string]bool{
 			"5":  true,

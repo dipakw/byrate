@@ -199,12 +199,12 @@ class Timer {
         },
 
         chunk: {
-            default: 4,
+            default: 16,
             values: [2, 4, 8, 16, 32, 64],
         },
 
         duration: {
-            default: 15,
+            default: 10,
             values: [5, 10, 15, 20, 25, 30],
         },
     };
