@@ -509,6 +509,7 @@ class Timer {
     }
 
     const tabEls = document.querySelectorAll('.modal .content .tabs > button');
+    const tabLabel = document.querySelector('.modal .content .tab-label');
 
     const setTab = (tab) => {
         if (tab !== 'download' && tab !== 'upload') {
@@ -529,6 +530,8 @@ class Timer {
         currentTab = tab;
 
         updateSettingsUI(tab);
+
+        tabLabel.textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
     }
 
     tabEls.forEach((tabEl) => {
