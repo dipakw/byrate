@@ -314,6 +314,7 @@ class Timer {
             params: {
                 size: getSettingsOption('size'),
                 chunk: getSettingsOption('chunk'),
+                duration: getSettingsOption('duration'),
             },
         });
 
