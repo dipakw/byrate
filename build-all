@@ -2,6 +2,22 @@
 
 set -e  # Exit on error
 
+# Function to replace text in a file
+replace_in_file() {
+  local file="$1"
+  local search="$2"
+  local replace="$3"
+  
+  # Detect platform
+  if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS: requires empty string for -i
+    sed -i '' "s|$search|$replace|g" "$file"
+  else
+    # Linux: can use -i directly
+    sed -i "s|$search|$replace|g" "$file"
+  fi
+}
+
 BINARY_NAME="byrate"
 OUTPUT_DIR="release"
 mkdir -p "$OUTPUT_DIR"
@@ -26,18 +42,11 @@ fi
 # Remove v from the version
 APP_VERSION=${VERSION_TAG#v}
 
-# Replace "dev" with the app version
-FILE="main.go"
-SEARCH="dev"
+# Replace version in main.go
+replace_in_file "main.go" "dev" "$APP_VERSION"
 
-# Detect platform
-if [[ "$(uname)" == "Darwin" ]]; then
-  # macOS: requires empty string for -i
-  sed -i '' "s|$SEARCH|$APP_VERSION|g" "$FILE"
-else
-  # Linux: can use -i directly
-  sed -i "s|$SEARCH|$APP_VERSION|g" "$FILE"
-fi
+# Replace version in ui/index.html
+replace_in_file "handle/ui/index.html" "<a>dev</a>" "<a>$APP_VERSION</a>"
 
 # Header
 HEADER=$(printf "%-22s | %-4s | %-4s" "| Platform" "Size" "Zip    |")
