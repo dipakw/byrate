@@ -222,7 +222,7 @@ class Timer {
         now.classList.add('active');
 
         if (!uiOnly) {
-            localStorage.setItem(`${key}`, value);
+            localStorage.setItem(`byrate_dl_${key}`, value);
         }
     }
 
@@ -232,7 +232,7 @@ class Timer {
             return;
         }
 
-        const value = Number(localStorage.getItem(key));
+        const value = Number(localStorage.getItem(`byrate_dl_${key}`));
 
         if (value && !isNaN(value) && settingsValues[key].values.indexOf(value) !== -1) {
             return value;
