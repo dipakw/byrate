@@ -12,7 +12,7 @@ func Run(version string) {
 	cmd := "start"
 
 	cli := NewCli(map[string]string{
-		"host": "0.0.0.0",
+		"host": "::",
 		"port": "14000",
 	})
 

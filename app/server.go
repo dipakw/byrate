@@ -3,6 +3,8 @@ package app
 import (
 	"context"
 	"net"
+	"strings"
+	"syscall"
 )
 
 func NewServer(conf *Config) *Server {
@@ -16,7 +18,31 @@ func NewServer(conf *Config) *Server {
 }
 
 func (s *Server) Start(handle func(net.Conn)) error {
-	listener, err := net.Listen(s.conf.Net, s.conf.Addr)
+	var listener net.Listener
+	var err error
+
+	if s.conf.Net == "tcp" && strings.Contains(s.conf.Addr, "[::]") {
+		lc := net.ListenConfig{
+			Control: func(network, address string, c syscall.RawConn) error {
+				var controlErr error
+
+				err := c.Control(func(fd uintptr) {
+					// Disable IPV6_V6ONLY to allow both IPv6 and IPv4
+					controlErr = syscall.SetsockoptInt(int(fd), syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 0)
+				})
+
+				if err != nil {
+					return err
+				}
+
+				return controlErr
+			},
+		}
+
+		listener, err = lc.Listen(context.Background(), s.conf.Net, s.conf.Addr)
+	} else {
+		listener, err = net.Listen(s.conf.Net, s.conf.Addr)
+	}
 
 	if err != nil {
 		return err

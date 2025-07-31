@@ -16,7 +16,7 @@ Commands:
   help, h      Show this help message
 
 Options:
-  --host, -h    Server host (default: 0.0.0.0)
+  --host, -h    Server host (default: ::)
   --port, -p    Server port (default: 14000)
   --unix, -u    Use unix socket instead of TCP
 
