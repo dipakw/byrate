@@ -28,7 +28,7 @@ func (s *Server) Start(handle func(net.Conn)) error {
 
 				err := c.Control(func(fd uintptr) {
 					// Disable IPV6_V6ONLY to allow both IPv6 and IPv4
-					controlErr = syscall.SetsockoptInt(int(fd), syscall.IPPROTO_IPV6, syscall.IPV6_V6ONLY, 0)
+					controlErr = setSockOptIPv6Only(fd)
 				})
 
 				if err != nil {
