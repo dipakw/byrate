@@ -387,7 +387,7 @@ class Timer {
 
     // Settings.
     const modal = document.querySelector('.modal');
-    const inputs = document.querySelectorAll('.modal .content .input');
+    const inputs = document.querySelectorAll('.modal .content .input .select');
 
     const openModal = () => {
         updateSettingsUI();
