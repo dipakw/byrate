@@ -4,6 +4,11 @@ class SpeedTest {
     downloadStartedAt = 0;
     downloadStarted = false;
 
+    // Track uploaded bytes
+    uploaded = 0;
+    uploadStartedAt = 0;
+    uploadStarted = false;
+
     // Callbacks to notify about changes
     callbacks = [];
 
@@ -11,8 +16,9 @@ class SpeedTest {
     reader = null;
     controller = null;
 
-    constructor({ download }) {
+    constructor({ download, upload }) {
         this.downloadUrl = download;
+        this.uploadUrl = upload;
     }
 
     async download({ params }) {
@@ -72,6 +78,69 @@ class SpeedTest {
             };
 
             await readChunk();
+        } catch (e) {
+            cb(false, e);
+        }
+    }
+
+    async upload({ params }) {
+        this.uploaded = 0;
+        this.uploadStartedAt = Date.now();
+
+        await this.uploadReal(params, (done, e) => {
+            let status = done ? 'completed' : 'progress';
+
+            if (e) {
+                status = 'errored';
+            }
+
+            this.notify({
+                status,
+                type: 'upload',
+                error: e,
+                bytes: this.uploaded,
+            });
+        });
+    }
+
+    async uploadReal(params, cb) {
+        const queryParams = new URLSearchParams();
+
+        if (params && typeof params === 'object') {
+            for (const key in params) {
+                queryParams.set(key, params[key]);
+            }
+        }
+
+        queryParams.set('cache', Math.random());
+
+        try {
+            const blobSize = 10 * 1024 * 1024; // 10MB
+            const chunks = 10;
+            const data = new Uint8Array(blobSize).fill(0xff);
+
+            for (let i = 0; i < chunks; i++) {
+                const res = await fetch(`${this.uploadUrl}?${queryParams.toString()}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/octet-stream'
+                    },
+                    body: data
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Upload failed with status ${res.status}`);
+                }
+
+                this.uploaded += data.byteLength;
+
+                if (!this.uploadStarted) {
+                    this.uploadStartedAt = Date.now();
+                    this.uploadStarted = true;
+                }
+
+                cb(i === chunks - 1, null);
+            }
         } catch (e) {
             cb(false, e);
         }
@@ -210,7 +279,7 @@ class Timer {
     };
 
     // Settings setter.
-    const setSettingsOption = (key, value, uiOnly = false) => {
+    const setSettingsOption = (type, key, value, uiOnly = false) => {
         const pre = document.querySelector(`.modal .content .input[data-name="${key}"] .active`);
         const now = document.querySelector(`.modal .content .input[data-name="${key}"] [data-value="${value}"]`);
 
@@ -222,17 +291,17 @@ class Timer {
         now.classList.add('active');
 
         if (!uiOnly) {
-            localStorage.setItem(`byrate_dl_${key}`, value);
+            localStorage.setItem(`byrate_${type}_${key}`, value);
         }
     }
 
     // Settings getter.
-    const getSettingsOption = (key) => {
+    const getSettingsOption = (type, key) => {
         if (!settingsValues[key]) {
             return;
         }
 
-        const value = Number(localStorage.getItem(`byrate_dl_${key}`));
+        const value = Number(localStorage.getItem(`byrate_${type}_${key}`));
 
         if (value && !isNaN(value) && settingsValues[key].values.indexOf(value) !== -1) {
             return value;
@@ -255,10 +324,10 @@ class Timer {
     }
 
     // Update settings from UI.
-    const updateSettingsUI = () => {
-        setSettingsOption('size', getSettingsOption('size'), true);
-        setSettingsOption('chunk', getSettingsOption('chunk'), true);
-        setSettingsOption('duration', getSettingsOption('duration'), true);
+    const updateSettingsUI = (type) => {
+        setSettingsOption(type, 'size', getSettingsOption(type, 'size'), true);
+        setSettingsOption(type, 'chunk', getSettingsOption(type, 'chunk'), true);
+        setSettingsOption(type, 'duration', getSettingsOption(type, 'duration'), true);
     }
 
     // Update app size.
@@ -310,7 +379,10 @@ class Timer {
 
     const speedTest = new SpeedTest({
         download: '/download',
+        upload: '/upload',
     });
+
+    window.st = speedTest;
 
     const startTest = () => {
         hand.classList.add('active');
@@ -320,13 +392,13 @@ class Timer {
 
         speedTest.download({
             params: {
-                size: getSettingsOption('size'),
-                chunk: getSettingsOption('chunk'),
-                duration: getSettingsOption('duration'),
+                size: getSettingsOption('download', 'size'),
+                chunk: getSettingsOption('download', 'chunk'),
+                duration: getSettingsOption('download', 'duration'),
             },
         });
 
-        timeout = setTimeout(stopTest, getSettingsOption('duration') * 1000);
+        timeout = setTimeout(stopTest, getSettingsOption('download', 'duration') * 1000);
     }
 
     const stopTest = () => {
@@ -389,8 +461,10 @@ class Timer {
     const modal = document.querySelector('.modal');
     const inputs = document.querySelectorAll('.modal .content .input .select');
 
+    let currentTab = "download";
+
     const openModal = () => {
-        updateSettingsUI();
+        setTab("download");
         modal.style.display = 'flex';
         modal.classList.add('fade-in');
     }
@@ -422,7 +496,7 @@ class Timer {
         const settings = getSettingsFromUI();
 
         for (const key in settings) {
-            setSettingsOption(key, settings[key]);
+            setSettingsOption(currentTab, key, settings[key]);
         }
 
         closeModal();
@@ -430,16 +504,48 @@ class Timer {
 
     const setDefaults = () => {
         for (const key in settingsValues) {
-            setSettingsOption(key, settingsValues[key].default, true);
+            setSettingsOption(currentTab, key, settingsValues[key].default, true);
         }
     }
+
+    const tabEls = document.querySelectorAll('.modal .content .tabs > button');
+
+    const setTab = (tab) => {
+        if (tab !== 'download' && tab !== 'upload') {
+            return;
+        }
+
+        const element = document.querySelector(`.modal .content .tabs > button[data-tab="${tab}"]`);
+
+        if (!element) {
+            return;
+        }
+
+        tabEls.forEach((tabEl) => {
+            tabEl.classList.remove('active');
+        });
+
+        element.classList.add('active');
+        currentTab = tab;
+
+        updateSettingsUI(tab);
+    }
+
+    tabEls.forEach((tabEl) => {
+        tabEl.querySelector('svg').addEventListener('click', () => {
+            setTab(tabEl.dataset.tab);
+        });
+
+        tabEl.addEventListener('click', (e) => {
+            setTab(e.target.dataset.tab);
+        });
+    });
 
     document.querySelector('.open-settings').addEventListener('click', openModal);
     document.querySelector('.close-settings').addEventListener('click', closeModal);
     document.querySelector('.save-settings').addEventListener('click', saveSettings);
     document.querySelector('.set-defaults').addEventListener('click', setDefaults);
 
-    updateSettingsUI();
     updateAppSize();
 
     window.addEventListener('resize', updateAppSize);

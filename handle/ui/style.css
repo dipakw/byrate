@@ -264,9 +264,64 @@ body,
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 12px 20px;
 }
 
-.modal .content .input {
+.modal .content .body {
+    padding: 16px 16px 20px 16px;
+    background-color: #f0f0f0;
+    padding-top: 16px 20px;
+    border-radius: 0 0 10px 10px;
+    border-top: 1px solid #ccc;
+}
+
+.modal .content .tabs {
+    font-size: 14px;
+    line-height: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    text-align: center;
+    margin-bottom: -1px;
+}
+
+.modal .content .tabs > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    cursor: pointer;
+    gap: 8px;
+    border: none;
+    background-color: transparent;
+    outline: none;
+    border-top: 1px solid transparent;
+}
+
+.modal .content .tabs > button:first-child {
+    border-right: 1px solid transparent;
+    border-radius: 0 10px 0 0;
+}
+
+.modal .content .tabs > button:last-child {
+    border-left: 1px solid transparent;
+    border-radius: 10px 0 0 0;
+}
+
+.modal .content .tabs > button.active:first-child {
+    border-right-color: #ccc;
+}
+
+.modal .content .tabs > button.active:last-child {
+    border-left-color: #ccc;
+}
+
+.modal .content .tabs > button.active {
+    background-color: #f0f0f0;
+    border-top: 1px solid #ccc;
+}
+
+.modal .content .input + .input {
     margin-top: 10px;
 }
 
@@ -275,7 +330,6 @@ body,
     height: auto;
     background-color: #fff;
     border-radius: 10px;
-    padding: 20px 24px 24px 24px;
     margin-top: auto;
     margin-bottom: auto;
     max-width: 100%;

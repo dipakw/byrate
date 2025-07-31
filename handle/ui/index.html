@@ -121,8 +121,8 @@
                     <strong>Settings</strong>
                 </div>
                 <div>
-                    <svg fill="red" width="24px" class="close-settings click" height="24px" viewBox="0 0 32 32" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg">
+                    <svg fill="red" width="24px" class="close-settings click" height="24px" viewBox="0 0 32 32"
+                        version="1.1" xmlns="http://www.w3.org/2000/svg">
                         <g stroke-width="0"></g>
                         <g stroke-linecap="round" stroke-linejoin="round"></g>
                         <g>
@@ -134,61 +134,99 @@
                 </div>
             </div>
 
-            <div class="input" data-name="size">
-                <div class="label">Download Size</div>
-                <div class="select">
-                    <div data-value="5">5 MiB</div>
-                    <div data-value="10">10 MiB</div>
-                    <div data-value="20">20 MiB</div>
-                    <div data-value="50" class="active">50 MiB</div>
-                    <div data-value="100">100 MiB</div>
-                    <div data-value="200">200 MiB</div>
-                    <div data-value="300">300 MiB</div>
-                    <div data-value="400">400 MiB</div>
-                    <div data-value="500">500 MiB</div>
-                </div>
+            <div class="tabs">
+                <button data-tab="download" class="active">
+                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g stroke-width="0"></g>
+                        <g stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g>
+                            <path
+                                d="M6.28571 19C3.91878 19 2 17.1038 2 14.7647C2 12.4256 3.91878 10.5294 6.28571 10.5294C6.56983 10.5294 6.8475 10.5567 7.11616 10.6089M14.381 8.02721C14.9767 7.81911 15.6178 7.70588 16.2857 7.70588C16.9404 7.70588 17.5693 7.81468 18.1551 8.01498M7.11616 10.6089C6.88706 9.9978 6.7619 9.33687 6.7619 8.64706C6.7619 5.52827 9.32028 3 12.4762 3C15.4159 3 17.8371 5.19371 18.1551 8.01498M7.11616 10.6089C7.68059 10.7184 8.20528 10.9374 8.66667 11.2426M18.1551 8.01498C20.393 8.78024 22 10.8811 22 13.3529C22 16.0599 20.0726 18.3221 17.5 18.8722"
+                                stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"></path>
+                            <path d="M12 22V16M12 22L14 20M12 22L10 20" stroke="#1C274C" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round"></path>
+                        </g>
+                    </svg>
+
+                    Download
+                </button>
+
+                <button data-tab="upload">
+                    <svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g stroke-width="0"></g>
+                        <g stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g>
+                            <path
+                                d="M6.28571 19C3.91878 19 2 17.1038 2 14.7647C2 12.4256 3.91878 10.5294 6.28571 10.5294C6.56983 10.5294 6.8475 10.5567 7.11616 10.6089M14.381 8.02721C14.9767 7.81911 15.6178 7.70588 16.2857 7.70588C16.9404 7.70588 17.5693 7.81468 18.1551 8.01498M7.11616 10.6089C6.88706 9.9978 6.7619 9.33687 6.7619 8.64706C6.7619 5.52827 9.32028 3 12.4762 3C15.4159 3 17.8371 5.19371 18.1551 8.01498M7.11616 10.6089C7.68059 10.7184 8.20528 10.9374 8.66667 11.2426M18.1551 8.01498C20.393 8.78024 22 10.8811 22 13.3529C22 16.0599 20.0726 18.3221 17.5 18.8722"
+                                stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"></path>
+                            <path d="M12 16V22M12 16L14 18M12 16L10 18" stroke="#1C274C" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round"></path>
+                        </g>
+                    </svg>
+
+                    Upload
+                </button>
             </div>
 
-            <div class="input" data-name="chunk">
-                <div class="label">Chunk Size</div>
-                <div class="select">
-                    <div data-value="2">2 KiB</div>
-                    <div class="active" data-value="4">4 KiB</div>
-                    <div data-value="8">8 KiB</div>
-                    <div data-value="16">16 KiB</div>
-                    <div data-value="32">32 KiB</div>
-                    <div data-value="64">64 KiB</div>
+            <div class="body">
+
+                <div class="input" data-name="size">
+                    <div class="label">Download Size</div>
+                    <div class="select">
+                        <div data-value="5">5 MiB</div>
+                        <div data-value="10">10 MiB</div>
+                        <div data-value="20">20 MiB</div>
+                        <div data-value="50" class="active">50 MiB</div>
+                        <div data-value="100">100 MiB</div>
+                        <div data-value="200">200 MiB</div>
+                        <div data-value="300">300 MiB</div>
+                        <div data-value="400">400 MiB</div>
+                        <div data-value="500">500 MiB</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="input" data-name="duration">
-                <div class="label">Max Duration</div>
-                <div class="select">
-                    <div data-value="5">5s</div>
-                    <div data-value="10">10s</div>
-                    <div class="active" data-value="15">15s</div>
-                    <div data-value="20">20s</div>
-                    <div data-value="25">25s</div>
-                    <div data-value="30">30s</div>
+                <div class="input" data-name="chunk">
+                    <div class="label">Chunk Size</div>
+                    <div class="select">
+                        <div data-value="2">2 KiB</div>
+                        <div class="active" data-value="4">4 KiB</div>
+                        <div data-value="8">8 KiB</div>
+                        <div data-value="16">16 KiB</div>
+                        <div data-value="32">32 KiB</div>
+                        <div data-value="64">64 KiB</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="foot">
-                <div><a class="set-defaults click">
-                        <svg width="12px" height="12px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
-                            fill="currentColor" transform="matrix(-1, 0, 0, 1, 0, 0)">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <path fill="currentColor"
-                                    d="M5.23331,0.493645 C6.8801,-0.113331 8.6808,-0.161915 10.3579,0.355379 C11.5179,0.713177 12.5743,1.32796 13.4526,2.14597 L14.2929,1.30564 C14.9229,0.675676 16,1.12184 16,2.01275 L16,6.00002 L12.0127,6.00002 C11.1218,6.00002 10.6757,4.92288 11.3056,4.29291 L12.0372,3.56137 C11.389,2.97184 10.6156,2.52782 9.76845,2.26653 C8.5106,1.87856 7.16008,1.915 5.92498,2.37023 C4.68989,2.82547 3.63877,3.67423 2.93361,4.78573 C2.22844,5.89723 1.90836,7.20978 2.02268,8.52112 C2.13701,9.83246 2.6794,11.0698 3.56627,12.0425 C4.45315,13.0152 5.63528,13.6693 6.93052,13.9039 C8.22576,14.1385 9.56221,13.9407 10.7339,13.3409 C11.9057,12.7412 12.8476,11.7727 13.4147,10.5848 C13.6526,10.0864 14.2495,9.8752 14.748,10.1131 C15.2464,10.351 15.4575,10.948 15.2196,11.4464 C14.4635,13.0302 13.2076,14.3215 11.6453,15.1213 C10.0829,15.921 8.30101,16.1847 6.57402,15.8719 C4.84704,15.559 3.27086,14.687 2.08836,13.39 C0.905861,12.0931 0.182675,10.4433 0.0302394,8.69483 C-0.122195,6.94637 0.304581,5.1963 1.2448,3.7143 C2.18503,2.2323 3.58652,1.10062 5.23331,0.493645 Z">
-                                </path>
-                            </g>
-                        </svg>
+                <div class="input" data-name="duration">
+                    <div class="label">Max Duration</div>
+                    <div class="select">
+                        <div data-value="5">5s</div>
+                        <div data-value="10">10s</div>
+                        <div class="active" data-value="15">15s</div>
+                        <div data-value="20">20s</div>
+                        <div data-value="25">25s</div>
+                        <div data-value="30">30s</div>
+                    </div>
+                </div>
 
-                        Default
-                    </a></div>
-                <button class="mbtn save-settings">Save</button>
+                <div class="foot">
+                    <div><a class="set-defaults click">
+                            <svg width="12px" height="12px" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor" transform="matrix(-1, 0, 0, 1, 0, 0)">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path fill="currentColor"
+                                        d="M5.23331,0.493645 C6.8801,-0.113331 8.6808,-0.161915 10.3579,0.355379 C11.5179,0.713177 12.5743,1.32796 13.4526,2.14597 L14.2929,1.30564 C14.9229,0.675676 16,1.12184 16,2.01275 L16,6.00002 L12.0127,6.00002 C11.1218,6.00002 10.6757,4.92288 11.3056,4.29291 L12.0372,3.56137 C11.389,2.97184 10.6156,2.52782 9.76845,2.26653 C8.5106,1.87856 7.16008,1.915 5.92498,2.37023 C4.68989,2.82547 3.63877,3.67423 2.93361,4.78573 C2.22844,5.89723 1.90836,7.20978 2.02268,8.52112 C2.13701,9.83246 2.6794,11.0698 3.56627,12.0425 C4.45315,13.0152 5.63528,13.6693 6.93052,13.9039 C8.22576,14.1385 9.56221,13.9407 10.7339,13.3409 C11.9057,12.7412 12.8476,11.7727 13.4147,10.5848 C13.6526,10.0864 14.2495,9.8752 14.748,10.1131 C15.2464,10.351 15.4575,10.948 15.2196,11.4464 C14.4635,13.0302 13.2076,14.3215 11.6453,15.1213 C10.0829,15.921 8.30101,16.1847 6.57402,15.8719 C4.84704,15.559 3.27086,14.687 2.08836,13.39 C0.905861,12.0931 0.182675,10.4433 0.0302394,8.69483 C-0.122195,6.94637 0.304581,5.1963 1.2448,3.7143 C2.18503,2.2323 3.58652,1.10062 5.23331,0.493645 Z">
+                                    </path>
+                                </g>
+                            </svg>
+
+                            Default
+                        </a></div>
+                    <button class="mbtn save-settings">Save</button>
+                </div>
+
             </div>
         </div>
     </div>
