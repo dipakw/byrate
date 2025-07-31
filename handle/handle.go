@@ -50,7 +50,11 @@ func Handle(conn net.Conn) {
 				if opt.Opts[val] {
 					opts[key], _ = strconv.Atoi(val)
 				}
-			} else {
+			}
+		}
+
+		for key, opt := range downloadOptions {
+			if _, ok := opts[key]; !ok {
 				opts[key], _ = strconv.Atoi(opt.Default)
 			}
 		}
