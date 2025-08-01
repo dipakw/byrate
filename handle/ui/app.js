@@ -109,7 +109,7 @@ class SpeedTest {
                     return null;
                 }
 
-                const bufSize = Math.min(remaining, Math.min(remaining, chunkSize));
+                const bufSize = Math.min(remaining, chunkSize);
                 remaining -= bufSize;
                 return new Blob([buffer.slice(0, bufSize)], { type: 'application/octet-stream' });
             },

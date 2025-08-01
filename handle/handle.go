@@ -124,11 +124,11 @@ func Handle(conn net.Conn) {
 			return
 		}
 
-		if contentLength > MAX_UPLOAD_SIZE {
+		if contentLength <= 0 || contentLength > MAX_UPLOAD_SIZE {
 			return
 		}
 
-		if contentLength != opts["size"]*1024*1024 {
+		if strconv.Itoa(contentLength) != req.Params["size"] {
 			return
 		}
 
