@@ -139,10 +139,28 @@ body,
     border-radius: 20px;
     border-top: 1px solid #0f1c2f;
     border-bottom: 1px solid #0f1c2f;
+    margin: 2px 0;
 }
 
 .btnw {
-    padding-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px dotted #738a3888;
+    border-radius: 20px;
+    padding: 4px;
+}
+
+.dropdown {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    color: currentColor;
+    text-align: center;
 }
 
 .btn {
@@ -154,8 +172,10 @@ body,
     cursor: pointer;
     font-size: 13px;
     line-height: 1;
-    padding: 4px 10px;
     border-radius: 20px;
+    height: 18px;
+    width: 18px;
+    position: relative;
 }
 
 .btn:hover {
@@ -168,13 +188,17 @@ body,
 
 .btn::before {
     content: "";
-    display: inline-block;
-    margin-right: 4px;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 0;
     height: 0;
     border-top: 4px solid transparent;
     border-bottom: 4px solid transparent;
     border-left: 8px solid currentColor;
+    margin-left: 1px;
 }
 
 .btn.active {
@@ -182,12 +206,13 @@ body,
 }
 
 .btn.active::before {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-top: none;
     border-left: none;
     border-bottom: none;
     background-color: currentColor;
+    margin-left: 0px;
 }
 
 .footer {

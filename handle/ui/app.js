@@ -97,7 +97,7 @@ class SpeedTest {
             bytes: 0,
         });
 
-        const totalSize = 1 * 1024 * 1024 * 1024; // 1GiB
+        const totalSize = params.size * 1024 * 1024;
         const chunkSize = 50 * 1024 * 1024; // 50MB
         const buffer = new Uint8Array(totalSize).fill(0x00);
 
@@ -113,6 +113,10 @@ class SpeedTest {
                 remaining -= bufSize;
                 return new Blob([buffer.slice(0, bufSize)], { type: 'application/octet-stream' });
             },
+
+            size: () => {
+                return totalSize;
+            }
         };
 
         this.uploaded = 0;
@@ -121,7 +125,7 @@ class SpeedTest {
         await this.uploadReal(file, params, (done, e) => {
             let status = done ? 'completed' : 'progress';
 
-            if (e) {
+            if (!done && e) {
                 status = 'errored';
             }
 
@@ -148,7 +152,7 @@ class SpeedTest {
                 this.uploaded += size;
             }
 
-            cb(done, e);
+            cb(this.uploaded >= file.size(), e);
         }
 
         while (true) {
@@ -182,7 +186,7 @@ class SpeedTest {
                 cb(event.loaded, false, null);
             });
 
-            xhr.onload = (event) => {
+            xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     cb(0, true, null);
                 } else {
@@ -456,27 +460,31 @@ class Timer {
     window.st = speedTest;
 
     const startTest = () => {
+        const testType = document.querySelector('#test-type').value;
+
+        if (testType !== "download" && testType !== "upload") {
+            return;
+        }
+
         hand.classList.add('active');
         button.classList.add('active');
-        button.textContent = 'Stop';
         timer.reset().start();
 
-        speedTest.download({
+        speedTest[testType]({
             params: {
-                size: getSettingsOption('download', 'size'),
-                chunk: getSettingsOption('download', 'chunk'),
-                duration: getSettingsOption('download', 'duration'),
+                size: getSettingsOption(testType, 'size'),
+                chunk: getSettingsOption(testType, 'chunk'),
+                duration: getSettingsOption(testType, 'duration'),
             },
         });
 
-        timeout = setTimeout(stopTest, getSettingsOption('download', 'duration') * 1000);
+        timeout = setTimeout(stopTest, getSettingsOption(testType, 'duration') * 1000);
     }
 
     const stopTest = () => {
         clearTimeout(timeout);
         hand.classList.remove('active');
         button.classList.remove('active');
-        button.textContent = 'Start';
         timer.pause();
         speedTest.stop();
     }
