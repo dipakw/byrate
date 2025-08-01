@@ -56,6 +56,10 @@ var uploadDownloadOptions = map[string]Opts{
 	},
 }
 
+const (
+	MAX_UPLOAD_SIZE = 1073741824 // 1GiB
+)
+
 type Opts struct {
 	Default string
 	Opts    map[string]bool

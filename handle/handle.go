@@ -124,7 +124,13 @@ func Handle(conn net.Conn) {
 			return
 		}
 
-		// TODO: check if the content-length equals to opts["size"] * 1024 * 1024
+		if contentLength > MAX_UPLOAD_SIZE {
+			return
+		}
+
+		if contentLength != opts["size"]*1024*1024 {
+			return
+		}
 
 		remainSizeToRead := contentLength - len(req.Body)
 
@@ -134,7 +140,7 @@ func Handle(conn net.Conn) {
 			buf := make([]byte, opts["chunk"]*1024)
 			read := 0
 
-			for read != remainSizeToRead {
+			for read < remainSizeToRead {
 				n, err := conn.Read(buf)
 
 				if err != nil {
@@ -142,6 +148,10 @@ func Handle(conn net.Conn) {
 				}
 
 				read += n
+
+				if n == 0 {
+					break
+				}
 			}
 		}
 
