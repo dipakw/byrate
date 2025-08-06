@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"os"
@@ -31,7 +32,7 @@ func Run(version string) {
 			addr = net.JoinHostPort(addr, cli.Get("port").Value())
 		}
 
-		server, err := runServer(network, addr)
+		server, err := runServer(version, network, addr)
 
 		if err != nil {
 			fmt.Println(err)
@@ -53,17 +54,31 @@ func Run(version string) {
 	}
 }
 
-func runServer(net, addr string) (*Server, error) {
+func runServer(version string, network, addr string) (*Server, error) {
 	server := NewServer(&Config{
-		Net:  net,
+		Net:  network,
 		Addr: addr,
 	})
 
-	if net == "unix" {
+	if network == "unix" {
 		os.Remove(addr)
 	}
 
-	if err := server.Start(handle.Handle); err != nil {
+	conf := &handle.Config{
+		BeforeSend: func(r *handle.Req, f string, b []byte) []byte {
+			if f == "index.html" {
+				b = bytes.Replace(b, []byte("<a>dev</a>"), []byte("<a class=\"cur-def\">"+version+"</a>"), -1)
+			}
+
+			return b
+		},
+	}
+
+	handler := func(conn net.Conn) {
+		handle.Handle(conn, conf)
+	}
+
+	if err := server.Start(handler); err != nil {
 		return nil, err
 	}
 

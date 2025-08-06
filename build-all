@@ -45,9 +45,6 @@ APP_VERSION=${VERSION_TAG#v}
 # Replace version in main.go
 replace_in_file "main.go" "dev" "$APP_VERSION"
 
-# Replace version in ui/index.html
-replace_in_file "handle/ui/index.html" "<a>dev</a>" "<a>$APP_VERSION</a>"
-
 # Header
 HEADER=$(printf "%-22s | %-4s | %-4s" "| Platform" "Size" "Zip    |")
 SEPARATOR=$(printf '%.0s-' {1..40})

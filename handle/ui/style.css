@@ -516,6 +516,10 @@ body,
     animation: fadeOut 0.3s ease-out forwards;
 }
 
+.cur-def {
+    cursor: default !important;
+}
+
 /* Animations */
 @keyframes fadeIn {
     from {

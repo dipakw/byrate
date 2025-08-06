@@ -14,7 +14,7 @@ import (
 //go:embed ui/index.html ui/toc.html ui/app.js ui/style.css ui/favicon.svg
 var ui embed.FS
 
-func Handle(conn net.Conn) {
+func Handle(conn net.Conn, conf *Config) {
 	defer conn.Close()
 
 	writer := bufio.NewWriter(conn)
@@ -189,13 +189,19 @@ func Handle(conn net.Conn) {
 			file = bytes.Replace(file, []byte(" curentTheme"), []byte(setTheme), -1)
 		}
 
-		res = &Res{
-			Code: 200,
-			Data: file,
+		if conf.BeforeSend != nil {
+			file = conf.BeforeSend(req, filename, file)
+		}
 
-			Headers: map[string]string{
-				"Content-Type": mimeType,
-			},
+		if file != nil {
+			res = &Res{
+				Code: 200,
+				Data: file,
+
+				Headers: map[string]string{
+					"Content-Type": mimeType,
+				},
+			}
 		}
 	}
 

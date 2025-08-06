@@ -82,3 +82,7 @@ type Res struct {
 	Headers map[string]string
 	NoSize  bool
 }
+
+type Config struct {
+	BeforeSend func(r *Req, f string, b []byte) []byte
+}
