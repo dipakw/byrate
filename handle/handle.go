@@ -33,7 +33,10 @@ func Handle(conn net.Conn, conf *Config) {
 		return
 	}
 
-	res := &Res{
+	req.Conn = conn
+	req.Writer = writer
+
+	res404 := &Res{
 		Code: 404,
 		Data: []byte("Not Found"),
 
@@ -41,6 +44,8 @@ func Handle(conn net.Conn, conf *Config) {
 			"Content-Type": "text/plain",
 		},
 	}
+
+	var res *Res = nil
 
 	if req.Path == "download" {
 		opts := map[string]int{}
@@ -170,6 +175,8 @@ func Handle(conn net.Conn, conf *Config) {
 	file, err := ui.ReadFile("ui/" + filename)
 
 	if err == nil {
+		req.Resolved = filename
+
 		mimeType := "text/plain"
 
 		for ext, mime := range mimes {
@@ -179,30 +186,37 @@ func Handle(conn net.Conn, conf *Config) {
 			}
 		}
 
-		if filename == "index.html" {
-			setTheme := ""
+		res = &Res{
+			Code: 200,
+			Data: file,
 
-			if req.Headers["cookie"] != "" && strings.Contains(req.Headers["cookie"], "theme=light") {
-				setTheme = " light"
-			}
+			Headers: map[string]string{
+				"Content-Type": mimeType,
+			},
+		}
+	}
 
-			file = bytes.Replace(file, []byte(" curentTheme"), []byte(setTheme), -1)
+	if conf.Handle != nil {
+		if res == nil {
+			res = res404
 		}
 
-		if conf.BeforeSend != nil {
-			file = conf.BeforeSend(req, filename, file)
+		res = conf.Handle(req, res)
+	}
+
+	if req.Resolved == "index.html" {
+		setTheme := ""
+
+		if req.Headers["cookie"] != "" && strings.Contains(req.Headers["cookie"], "theme=light") {
+			setTheme = " light"
 		}
 
-		if file != nil {
-			res = &Res{
-				Code: 200,
-				Data: file,
+		res.Data = bytes.Replace(res.Data, []byte(" curentTheme"), []byte(setTheme), -1)
+		res.Data = bytes.Replace(res.Data, []byte("<a>dev</a>"), []byte("<a class=\"cur-def\">"+conf.Version+"</a>"), -1)
+	}
 
-				Headers: map[string]string{
-					"Content-Type": mimeType,
-				},
-			}
-		}
+	if res == nil {
+		res = res404
 	}
 
 	writer.Write(res.Bytes())

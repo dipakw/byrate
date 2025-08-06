@@ -1,5 +1,10 @@
 package handle
 
+import (
+	"bufio"
+	"net"
+)
+
 var statuses = map[int]string{
 	200: "OK",
 	404: "Not Found",
@@ -66,14 +71,17 @@ type Opts struct {
 }
 
 type Req struct {
-	Method  string
-	Path    string
-	Ver     string
-	Params  map[string]string
-	Headers map[string]string
-	Length  int
-	Index   int
-	Body    []byte
+	Method   string
+	Path     string
+	Ver      string
+	Params   map[string]string
+	Headers  map[string]string
+	Length   int
+	Index    int
+	Body     []byte
+	Writer   *bufio.Writer
+	Conn     net.Conn
+	Resolved string
 }
 
 type Res struct {
@@ -84,5 +92,6 @@ type Res struct {
 }
 
 type Config struct {
-	BeforeSend func(r *Req, f string, b []byte) []byte
+	Version string
+	Handle  func(req *Req, res *Res) *Res
 }

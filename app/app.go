@@ -1,7 +1,6 @@
 package app
 
 import (
-	"bytes"
 	"fmt"
 	"net"
 	"os"
@@ -65,12 +64,15 @@ func runServer(version string, network, addr string) (*Server, error) {
 	}
 
 	conf := &handle.Config{
-		BeforeSend: func(r *handle.Req, f string, b []byte) []byte {
-			if f == "index.html" {
-				b = bytes.Replace(b, []byte("<a>dev</a>"), []byte("<a class=\"cur-def\">"+version+"</a>"), -1)
-			}
+		Version: version,
 
-			return b
+		Handle: func(req *handle.Req, res *handle.Res) *handle.Res {
+			// if req.Resolved == "index.html" {
+			// re := regexp.MustCompile(`(?s)<!-- link:s:1 -->.*?<!-- link:e:1 -->`)
+			// res.Data = re.ReplaceAll(res.Data, []byte(""))
+			// }
+
+			return res
 		},
 	}
 
