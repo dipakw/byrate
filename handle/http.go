@@ -3,17 +3,49 @@ package handle
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"net"
+	"strconv"
 	"strings"
 )
 
-func (r *Req) Parse(b []byte) *Req {
-	// Find index separating headers and body
-	headerEnd := bytes.Index(b, []byte("\r\n\r\n"))
+func (r *Req) Parse(conn net.Conn) *Req {
+	var buf bytes.Buffer
+	var headerEnd int = -1
+
+	chunk := make([]byte, 1024)
+
+	for headerEnd == -1 {
+		n, err := conn.Read(chunk)
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
+			return nil
+		}
+
+		if _, err := buf.Write(chunk[:n]); err != nil {
+			return nil
+		}
+
+		headerEnd = bytes.Index(chunk[:n], []byte("\r\n\r\n"))
+
+		if headerEnd == -1 {
+			headerEnd = bytes.Index(buf.Bytes(), []byte("\r\n\r\n"))
+		}
+
+		if buf.Len() > MAX_HEADER_SIZE {
+			return nil
+		}
+	}
 
 	if headerEnd == -1 {
 		return nil // Malformed request, missing header-body separator
 	}
 
+	b := buf.Bytes()
 	r.Index = headerEnd
 
 	// Split headers from body
@@ -67,6 +99,40 @@ func (r *Req) Parse(b []byte) *Req {
 		Index:   headerEnd + 4,
 		Body:    b[headerEnd+4:],
 	}
+}
+
+func (r *Req) ConsumeBody(conn net.Conn, chunkSize int) error {
+	contentLength, err := strconv.Atoi(strOr(r.Headers["content-length"], "0"))
+
+	if err != nil {
+		return err
+	}
+
+	if contentLength > MAX_UPLOAD_SIZE {
+		return fmt.Errorf("content length out of range")
+	}
+
+	remainSizeToRead := contentLength - len(r.Body)
+
+	if remainSizeToRead > 0 {
+		buf := make([]byte, chunkSize)
+
+		for remainSizeToRead > 0 {
+			n, err := conn.Read(buf)
+
+			if err != nil {
+				return err
+			}
+
+			if n == 0 {
+				break
+			}
+
+			remainSizeToRead -= n
+		}
+	}
+
+	return nil
 }
 
 func (r *Res) Bytes() []byte {

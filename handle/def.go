@@ -62,7 +62,8 @@ var uploadDownloadOptions = map[string]Opts{
 }
 
 const (
-	MAX_UPLOAD_SIZE = 1073741824 // 1GiB
+	MAX_UPLOAD_SIZE = 1073741824      // 1GiB
+	MAX_HEADER_SIZE = 2 * 1024 * 1024 // 1MiB
 )
 
 type Opts struct {
@@ -94,4 +95,12 @@ type Res struct {
 type Config struct {
 	Version string
 	Handle  func(req *Req, res *Res) *Res
+}
+
+func strOr(a, b string) string {
+	if a == "" {
+		return b
+	}
+
+	return a
 }

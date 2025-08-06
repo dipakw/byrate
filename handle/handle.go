@@ -19,15 +19,7 @@ func Handle(conn net.Conn, conf *Config) {
 
 	writer := bufio.NewWriter(conn)
 
-	buf := make([]byte, 4096)
-
-	n, err := conn.Read(buf)
-
-	if err != nil {
-		return
-	}
-
-	req := (&Req{}).Parse(buf[:n])
+	req := (&Req{}).Parse(conn)
 
 	if req == nil {
 		return
@@ -48,6 +40,10 @@ func Handle(conn net.Conn, conf *Config) {
 	var res *Res = nil
 
 	if req.Path == "download" {
+		if err := req.ConsumeBody(conn, 4096); err != nil {
+			return
+		}
+
 		opts := map[string]int{}
 
 		for key, opt := range uploadDownloadOptions {
@@ -166,12 +162,12 @@ func Handle(conn net.Conn, conf *Config) {
 		return
 	}
 
-	filename := req.Path
-
-	if filename == "" {
-		filename = "index.html"
+	if err := req.ConsumeBody(conn, 4096); err != nil {
+		fmt.Println(err)
+		return
 	}
 
+	filename := strOr(req.Path, "index.html")
 	file, err := ui.ReadFile("ui/" + filename)
 
 	if err == nil {
