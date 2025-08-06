@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//go:embed ui/index.html ui/app.js ui/style.css ui/favicon.svg
+//go:embed ui/index.html ui/toc.html ui/app.js ui/style.css ui/favicon.svg
 var ui embed.FS
 
 func Handle(conn net.Conn) {
