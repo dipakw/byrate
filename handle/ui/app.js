@@ -1,3 +1,5 @@
+"use strict";
+
 class SpeedTest {
     // Track downloaded bytes
     downloaded = 0;
@@ -5,7 +7,7 @@ class SpeedTest {
     downloadStarted = false;
 
     // Track uploaded bytes
-    uploaded = 0;
+    uploaded = [];
     uploadStartedAt = 0;
     uploadStarted = false;
     uploadXmlHttp = null;
@@ -119,7 +121,7 @@ class SpeedTest {
             }
         };
 
-        this.uploaded = 0;
+        this.uploaded = [];
         this.uploadStartedAt = Date.now();
 
         await this.uploadReal(file, params, (done, e) => {
@@ -133,13 +135,14 @@ class SpeedTest {
                 status,
                 type: 'upload',
                 error: e,
-                bytes: this.uploaded,
+                bytes: this.uploaded.reduce((a, b) => a + b, 0),
             });
         });
     }
 
     async uploadReal(file, params, cb) {
         const queryParams = new URLSearchParams();
+        let idx = 0;
 
         if (params && typeof params === 'object') {
             for (const key in params) {
@@ -149,10 +152,14 @@ class SpeedTest {
 
         const xhrCb = (size, done, e) => {
             if (size > 0) {
-                this.uploaded += size;
+                this.uploaded[idx] = size;
             }
 
-            cb(this.uploaded >= file.size(), e);
+            if (done) {
+                idx++;
+            }
+
+            cb(done && (this.uploaded.reduce((a, b) => a + b, 0) >= file.size()), e);
         }
 
         while (true) {
@@ -188,7 +195,7 @@ class SpeedTest {
 
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    cb(0, true, null);
+                    cb(0, xhr.responseText === "done", null);
                 } else {
                     cb(0, false, xhr.status);
                 }
