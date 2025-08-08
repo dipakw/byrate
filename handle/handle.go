@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
 	"strings"
@@ -134,17 +135,21 @@ func Handle(conn net.Conn, conf *Config) {
 		}
 
 		remainSizeToRead := contentLength - len(req.Body)
+		read := 0
 
 		if remainSizeToRead > 0 {
 			conn.SetReadDeadline(time.Now().Add(time.Duration(opts["duration"]+2) * time.Second))
 
 			buf := make([]byte, opts["chunk"]*1024)
-			read := 0
 
 			for read < remainSizeToRead {
 				n, err := conn.Read(buf)
 
 				if err != nil {
+					if err == io.EOF {
+						break
+					}
+
 					return
 				}
 

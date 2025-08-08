@@ -140,15 +140,19 @@ func (r *Res) Bytes() []byte {
 		fmt.Sprintf("HTTP/1.1 %d %s", r.Code, statuses[r.Code]),
 	}
 
-	if r.Headers != nil {
-		if _, ok := r.Headers["Content-Length"]; !ok {
-			r.Headers["Content-Length"] = fmt.Sprintf("%d", len(r.Data))
-		}
+	if r.Headers == nil {
+		r.Headers = map[string]string{}
+	}
+
+	if !r.NoSize && r.Headers["Content-Length"] == "" {
+		r.Headers["Content-Length"] = fmt.Sprintf("%d", len(r.Data))
 	}
 
 	for k, v := range r.Headers {
 		headers = append(headers, fmt.Sprintf("%s: %s", k, v))
 	}
+
+	r.Headers["Server"] = "byrate"
 
 	buf := bytes.NewBufferString(strings.Join(headers, "\r\n"))
 	buf.WriteString("\r\n\r\n")
