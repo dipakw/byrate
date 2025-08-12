@@ -11,7 +11,7 @@ A fully self-contained, portable, self-hosted internet speed test tool written i
 ## Download
 
 ```bash
-curl -sL https://dipakw.github.io/scripts/byrate-dl | sh
+curl -sL https://dipakw.github.io/@/byrate-dl | sh
 ```
 
 ## Get Started
